@@ -13,6 +13,8 @@ function MyLib:CreateMainWindow(title)
     MyLibUI.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
     MyLibUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
+
+
     -- общий контейнер окна
     local WindowFrame = Instance.new("Frame")
     WindowFrame.Name = "WindowFrame"
@@ -21,6 +23,8 @@ function MyLib:CreateMainWindow(title)
     WindowFrame.BorderSizePixel = 0
     WindowFrame.Position = UDim2.new(0.25, 0, 0.25, 0)
     WindowFrame.Size = UDim2.new(0, 800, 0, 500)
+    WindowFrame.Active = true
+    WindowFrame.Draggable = true
 
     -- TabBar слева
     local TabBar = Instance.new("Frame")
@@ -175,6 +179,13 @@ function MyLib:CreateButton(section, text, callback)
 
     return btn
 end
+
+function MyLib:CloseGUI(window)
+    if window and window.Gui then
+        window.Gui:Destroy()
+    end
+end
+
 
 
 return MyLib
