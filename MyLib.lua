@@ -186,6 +186,216 @@ function MyLib:CloseGUI(window)
     end
 end
 
+function MyLib:CreateToggle(section, text, default, callback)
+    local toggle = Instance.new("TextButton")
+    toggle.Size = UDim2.new(1, 0, 0, 35)
+    toggle.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    toggle.Text = ""
+    toggle.BorderSizePixel = 0
+    toggle.Parent = section.Content
+
+    -- заголовок
+    local label = Instance.new("TextLabel")
+    label.Parent = toggle
+    label.BackgroundTransparency = 1
+    label.Position = UDim2.new(0, 10, 0, 0)
+    label.Size = UDim2.new(0.7, 0, 1, 0)
+    label.Font = Enum.Font.SourceSans
+    label.Text = text
+    label.TextSize = 18
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- индикатор (квадрат справа)
+    local indicator = Instance.new("Frame")
+    indicator.Parent = toggle
+    indicator.Size = UDim2.new(0, 25, 0, 25)
+    indicator.Position = UDim2.new(1, -35, 0.5, -12)
+    indicator.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    indicator.BorderSizePixel = 0
+
+    local state = default or false
+
+    local function update()
+        if state then
+            indicator.BackgroundColor3 = Color3.fromRGB(0, 200, 0) -- зелёный (вкл)
+        else
+            indicator.BackgroundColor3 = Color3.fromRGB(60, 60, 60) -- серый (выкл)
+        end
+    end
+
+    update()
+
+    toggle.MouseButton1Click:Connect(function()
+        state = not state
+        update()
+        if callback then callback(state) end
+    end)
+
+    return toggle
+end
+
+function MyLib:CreateSlider(section, text, min, max, default, callback)
+    local sliderFrame = Instance.new("Frame")
+    sliderFrame.Size = UDim2.new(1, 0, 0, 50)
+    sliderFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    sliderFrame.BorderSizePixel = 0
+    sliderFrame.Parent = section.Content
+
+    -- Заголовок
+    local label = Instance.new("TextLabel")
+    label.Parent = sliderFrame
+    label.BackgroundTransparency = 1
+    label.Position = UDim2.new(0, 10, 0, 0)
+    label.Size = UDim2.new(0.7, 0, 0.5, 0)
+    label.Font = Enum.Font.SourceSans
+    label.Text = text .. " (" .. tostring(default) .. ")"
+    label.TextSize = 18
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- Полоса
+    local bar = Instance.new("Frame")
+    bar.Parent = sliderFrame
+    bar.Size = UDim2.new(0.9, 0, 0, 8)
+    bar.Position = UDim2.new(0.05, 0, 0.7, 0)
+    bar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    bar.BorderSizePixel = 0
+
+    -- Заполненная часть
+    local fill = Instance.new("Frame")
+    fill.Parent = bar
+    fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+    fill.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    fill.BorderSizePixel = 0
+
+    local value = default or min
+    local dragging = false
+
+    local function update(inputX)
+        local relativeX = math.clamp((inputX - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+        value = math.floor(min + (max - min) * relativeX)
+        fill.Size = UDim2.new(relativeX, 0, 1, 0)
+        label.Text = text .. " (" .. tostring(value) .. ")"
+        if callback then callback(value) end
+    end
+
+    -- Управление мышкой
+    bar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            update(input.Position.X)
+        end
+    end)
+
+    bar.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            update(input.Position.X)
+        end
+    end)
+
+    return sliderFrame
+end
+
+function MyLib:CreateDropdown(section, text, options, callback)
+    local dropdownFrame = Instance.new("Frame")
+    dropdownFrame.Size = UDim2.new(1, 0, 0, 40)
+    dropdownFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    dropdownFrame.BorderSizePixel = 0
+    dropdownFrame.Parent = section.Content
+
+    -- Заголовок (сама кнопка открытия)
+    local mainButton = Instance.new("TextButton")
+    mainButton.Parent = dropdownFrame
+    mainButton.Size = UDim2.new(1, 0, 1, 0)
+    mainButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    mainButton.Text = text .. " ▼"
+    mainButton.Font = Enum.Font.SourceSans
+    mainButton.TextSize = 18
+    mainButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    mainButton.BorderSizePixel = 0
+
+    -- Контейнер для опций
+    local optionFrame = Instance.new("Frame")
+    optionFrame.Parent = section.Content
+    optionFrame.Size = UDim2.new(1, 0, 0, #options * 30)
+    optionFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    optionFrame.BorderSizePixel = 0
+    optionFrame.Visible = false
+
+    local layout = Instance.new("UIListLayout")
+    layout.Parent = optionFrame
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    local opened = false
+
+    mainButton.MouseButton1Click:Connect(function()
+        opened = not opened
+        optionFrame.Visible = opened
+        if opened then
+            mainButton.Text = text .. " ▲"
+        else
+            mainButton.Text = text .. " ▼"
+        end
+    end)
+
+    for _, option in ipairs(options) do
+        local optButton = Instance.new("TextButton")
+        optButton.Parent = optionFrame
+        optButton.Size = UDim2.new(1, 0, 0, 30)
+        optButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        optButton.Text = option
+        optButton.Font = Enum.Font.SourceSans
+        optButton.TextSize = 18
+        optButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        optButton.BorderSizePixel = 0
+
+        optButton.MouseButton1Click:Connect(function()
+            mainButton.Text = text .. ": " .. option .. " ▼"
+            optionFrame.Visible = false
+            opened = false
+            if callback then callback(option) end
+        end)
+    end
+
+    return dropdownFrame
+end
+
+function MyLib:CreateTextbox(section, placeholder, default, callback)
+    local textboxFrame = Instance.new("Frame")
+    textboxFrame.Size = UDim2.new(1, 0, 0, 40)
+    textboxFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    textboxFrame.BorderSizePixel = 0
+    textboxFrame.Parent = section.Content
+
+    -- Поле для текста
+    local box = Instance.new("TextBox")
+    box.Parent = textboxFrame
+    box.Size = UDim2.new(1, -10, 1, -10)
+    box.Position = UDim2.new(0, 5, 0, 5)
+    box.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    box.Text = default or ""
+    box.PlaceholderText = placeholder or "Введите текст..."
+    box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    box.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+    box.Font = Enum.Font.SourceSans
+    box.TextSize = 18
+    box.BorderSizePixel = 0
+
+    box.FocusLost:Connect(function(enterPressed)
+        if enterPressed and callback then
+            callback(box.Text)
+        end
+    end)
+
+    return textboxFrame
+end
 
 
 return MyLib
