@@ -16,7 +16,7 @@ function MyLib:CreateMainWindow(title)
     local WindowFrame = Instance.new("Frame")
     WindowFrame.Name = "WindowFrame"
     WindowFrame.Parent = MyLibUI
-    WindowFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    WindowFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     WindowFrame.BorderSizePixel = 0
     WindowFrame.Position = UDim2.new(0.25, 0, 0.25, 0)
     WindowFrame.Size = UDim2.new(0, 800, 0, 500)
@@ -73,7 +73,7 @@ end
 function MyLib:CreateTab(window, name)
     local tabButton = Instance.new("TextButton")
     tabButton.Size = UDim2.new(1, 0, 0, 40)
-    tabButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    tabButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     tabButton.Text = name
     tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     tabButton.Parent = window.TabList
