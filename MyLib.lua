@@ -110,18 +110,27 @@ function MyLib:CreateTab(window, name)
 end
 
 function MyLib:CreateSection(tab, sectionName)
-    -- секция
+    -- если ещё нет сетки в MainFrame → создаём
+    if not tab.Frame:FindFirstChild("GridLayout") then
+        local grid = Instance.new("UIGridLayout")
+        grid.Name = "GridLayout"
+        grid.Parent = tab.Frame
+        grid.SortOrder = Enum.SortOrder.LayoutOrder
+        grid.CellPadding = UDim2.new(0, 10, 0, 10) -- отступы между секциями
+        grid.CellSize = UDim2.new(0.5, -15, 0.5, -15) -- 4 секции (2x2)
+    end
+
+    -- сама секция
     local Section = Instance.new("Frame")
     Section.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- черный фон
     Section.BorderSizePixel = 0
-    Section.Size = UDim2.new(0.5, -10, 0.5, -10) -- 4 секции (2x2)
     Section.Parent = tab.Frame
 
     -- Заголовок секции
     local Title = Instance.new("TextLabel")
     Title.Parent = Section
     Title.BackgroundTransparency = 1
-    Title.Size = UDim2.new(1, 0, 0, 25)
+    Title.Size = UDim2.new(1, -10, 0, 25)
     Title.Position = UDim2.new(0, 5, 0, 5)
     Title.Font = Enum.Font.SourceSansBold
     Title.Text = sectionName or "Section"
@@ -129,11 +138,11 @@ function MyLib:CreateSection(tab, sectionName)
     Title.TextColor3 = Color3.fromRGB(150, 150, 150) -- серый текст
     Title.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- контейнер для элементов внутри секции
+    -- контейнер для элементов
     local Content = Instance.new("Frame")
     Content.Parent = Section
     Content.BackgroundTransparency = 1
-    Content.Size = UDim2.new(1, -10, 1, -30)
+    Content.Size = UDim2.new(1, -10, 1, -35)
     Content.Position = UDim2.new(0, 5, 0, 30)
 
     local Layout = Instance.new("UIListLayout")
@@ -146,6 +155,7 @@ function MyLib:CreateSection(tab, sectionName)
         Content = Content
     }
 end
+
 
 --Кнопка
 function MyLib:CreateButton(section, text, callback)
