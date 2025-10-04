@@ -84,7 +84,7 @@ function MyLib:CreateTab(window, name)
 
     local tabFrame = Instance.new("Frame")
     tabFrame.Size = UDim2.new(1, 0, 1, 0)
-    tabFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- твой цвет для вкладки
+    tabFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- твой цвет для вкладки
     tabFrame.BorderSizePixel = 0
     tabFrame.Visible = false
     tabFrame.Parent = window.MainFrame
@@ -109,15 +109,55 @@ function MyLib:CreateTab(window, name)
     return tab
 end
 
--- Создание кнопки внутри вкладки
-function MyLib:CreateButton(tab, text, callback)
+function MyLib:CreateSection(tab, sectionName)
+    -- секция
+    local Section = Instance.new("Frame")
+    Section.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- черный фон
+    Section.BorderSizePixel = 0
+    Section.Size = UDim2.new(0.5, -10, 0.5, -10) -- 4 секции (2x2)
+    Section.Parent = tab.Frame
+
+    -- Заголовок секции
+    local Title = Instance.new("TextLabel")
+    Title.Parent = Section
+    Title.BackgroundTransparency = 1
+    Title.Size = UDim2.new(1, 0, 0, 25)
+    Title.Position = UDim2.new(0, 5, 0, 5)
+    Title.Font = Enum.Font.SourceSansBold
+    Title.Text = sectionName or "Section"
+    Title.TextSize = 20
+    Title.TextColor3 = Color3.fromRGB(150, 150, 150) -- серый текст
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- контейнер для элементов внутри секции
+    local Content = Instance.new("Frame")
+    Content.Parent = Section
+    Content.BackgroundTransparency = 1
+    Content.Size = UDim2.new(1, -10, 1, -30)
+    Content.Position = UDim2.new(0, 5, 0, 30)
+
+    local Layout = Instance.new("UIListLayout")
+    Layout.Parent = Content
+    Layout.SortOrder = Enum.SortOrder.LayoutOrder
+    Layout.Padding = UDim.new(0, 5)
+
+    return {
+        Frame = Section,
+        Content = Content
+    }
+end
+
+--Кнопка
+function MyLib:CreateButton(section, text, callback)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 200, 0, 40)
-    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60) -- твой цвет для кнопки
+    btn.Size = UDim2.new(1, 0, 0, 35) -- кнопка на всю ширину секции
+    btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- тёмный фон
     btn.Text = text
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.BorderSizePixel = 0
-    btn.Parent = tab.Frame
+    btn.Font = Enum.Font.SourceSans
+    btn.TextSize = 18
+    btn.Parent = section.Content -- теперь внутри контейнера секции
 
     btn.MouseButton1Click:Connect(function()
         if callback then callback() end
@@ -125,5 +165,6 @@ function MyLib:CreateButton(tab, text, callback)
 
     return btn
 end
+
 
 return MyLib
