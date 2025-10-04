@@ -1,5 +1,6 @@
 -- MyLib.lua
 local MyLib = {}
+MyLib._DraggingSlider = false
 
 -- Проверка
 function MyLib:SayHello()
@@ -282,17 +283,22 @@ function MyLib:CreateSlider(section, text, min, max, default, callback)
 
     -- Управление мышкой
     bar.InputBegan:Connect(function(input)
+        MyLib._DraggingSlider = true
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            MyLib._DraggingSlider = true -- 🚫 блокируем перемещение окна
             dragging = true
             update(input.Position.X)
         end
     end)
 
     bar.InputEnded:Connect(function(input)
+        MyLib._DraggingSlider = false
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = false
+            MyLib._DraggingSlider = false -- ✅ возвращаем возможность двигать окно
         end
     end)
+
 
     game:GetService("UserInputService").InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
